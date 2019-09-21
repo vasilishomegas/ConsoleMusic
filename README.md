@@ -4,7 +4,7 @@ Simple program to convert a string of notes into tones through C#'s Console.Beep
 ## Input file format:
 ```
 bpm
-note:octave;note:octave;
+note:duration;note:duration;
 ``` 
 Example
 ```
