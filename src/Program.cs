@@ -58,18 +58,25 @@ namespace ConsoleMusic
         /// <returns>Frequency of given note. For example, for C#4, it's 277</returns>
         private int CalculateFrequency(string note)
         {
-            int index = 0;
-            for (int i = 0; i < note.Length; ++i)
+            try
             {
-                if (note[i] >= '0' && note[i] <= '9')
+                int index = 0;
+                for (int i = 0; i < note.Length; ++i)
                 {
-                    index = noteIndices[note.Substring(0, i)] + int.Parse(note.Substring(i, note.Length - i)) * 12;
-                    break;
+                    if (note[i] >= '0' && note[i] <= '9') // if we find a number, it means we have passed the part indicating the tone and reached the part indicating the octave
+                    {
+                        index = noteIndices[note.Substring(0, i)] + int.Parse(note.Substring(i, note.Length - i)) * 12; // look up index of note
+                        break;
+                    }
                 }
+                int f = (int)(440 * (Math.Pow((Math.Pow(2.0, 1.0 / 12.0)), (index - 49)))); // 12-step octave frequency formula
+                Console.WriteLine(note + " " + f + " Hz");
+                return f;
             }
-            int f = (int)(440 * (Math.Pow((Math.Pow(2.0, 1.0 / 12.0)), (index - 49)))); // 12-step octave frequency formula
-            Console.WriteLine(note + " " + f + " Hz");
-            return f;
+            catch
+            {
+                throw new ArithmeticException("Incorrect note \"" + note + "\".");
+            }
         }
         /// <summary>
         /// Play the loaded song.
@@ -86,33 +93,40 @@ namespace ConsoleMusic
         public void ReadFile(string file)
         {
             // TODO: strip out spaces and newlines, garbage in general, error handling (incorrect input)
-            string[] lines = System.IO.File.ReadAllLines(file);
-            bpm = int.Parse(lines[0]);
-            string note = "";
-            string duration;
-            bool is1stPt = true;
-            int startindex; // See two lines above.
-            for (int i = 1; i < lines.Length; ++i)
+            try
             {
-                startindex = 0;
-                for (int j = 0; j < lines[i].Length; ++j)
+                string[] lines = System.IO.File.ReadAllLines(file);
+                bpm = int.Parse(lines[0]);
+                string note = "";
+                string duration;
+                bool is1stPt = true;
+                int startindex;
+                for (int i = 1; i < lines.Length; ++i)
                 {
-                    if (lines[i][j] == ';') // note complete, next one. id should be false: save duration and put note and duration in dict
+                    startindex = 0;
+                    for (int j = 0; j < lines[i].Length; ++j)
                     {
-                        duration = lines[i].Substring(startindex, j - startindex);
-                        notes.Add(new Note(CalculateFrequency(note), (int)(60000/((double)bpm/4*int.Parse(duration)))));
-                        startindex = j + 1;
-                        is1stPt = !is1stPt;
-                        if (!is1stPt) ; // something's wrong
-                    }
-                    if (lines[i][j] == ':') // switch from note to duration: save note and set id to false, startindex to current+1
-                    {
-                        note = lines[i].Substring(startindex, j - startindex);
-                        startindex = j + 1;
-                        is1stPt = !is1stPt;
-                        if (is1stPt) ; // something's wrong
+                        if (lines[i][j] == ';') // note complete, next one. id should be false: save duration and put note and duration in dict
+                        {
+                            duration = lines[i].Substring(startindex, j - startindex).Replace(" ", "");
+                            notes.Add(new Note(CalculateFrequency(note), (int)(60000 / ((double)bpm / 4 * int.Parse(duration)))));
+                            startindex = j + 1;
+                            is1stPt = !is1stPt;
+                            if (!is1stPt) ; // something's wrong
+                        }
+                        if (lines[i][j] == ':') // switch from note to duration: save note and set id to false, startindex to current+1
+                        {
+                            note = lines[i].Substring(startindex, j - startindex).Replace(" ", "");
+                            startindex = j + 1;
+                            is1stPt = !is1stPt;
+                            if (is1stPt) ; // something's wrong
+                        }
                     }
                 }
+            }
+            catch
+            {
+                throw new Exception("Something went wrong. File could not be read correctly.");
             }
         }
     }
