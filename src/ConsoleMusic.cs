@@ -7,6 +7,11 @@ namespace ConsoleMusic
     {
         private int tone;
         private int duration;
+        /// <summary>
+        /// Note constructor.
+        /// </summary>
+        /// <param name="tone">The frequency of the note in Hz</param>
+        /// <param name="duration">The duration of the note in ms</param>
         public Note(int tone, int duration)
         {
             this.tone = tone;
@@ -16,7 +21,6 @@ namespace ConsoleMusic
         public int Tone { get { return tone; } }
         public int Duration { get { return duration; } }
     }
-
 
     class ConsoleMusic
     {
@@ -41,6 +45,9 @@ namespace ConsoleMusic
         private int bpm;
         private readonly List<Note> notes; // Why can I still add values now? Or is it about the values within being immutable?
 
+        /// <summary>
+        /// Constructor. Initialise the list that will contain all notes to be played.
+        /// </summary>
         public ConsoleMusic() { notes = new List<Note>(); }
         /// <summary>
         /// Takes a string that denotes a note, splits it up into the the base note and the octave and uses that to calculate the proper frequency
